@@ -44,7 +44,7 @@ func NewDefaultQueue(nElems int) *MockQueue {
 	for i := 0; i < nElems; i++ {
 		messages[i] = []byte(strconv.Itoa(i))
 	}
-	return NewMock(messages)
+	return New(messages)
 }
 
 func (m *MockQueue) Next(ctx context.Context) (goduck.RawMessage, error) {
