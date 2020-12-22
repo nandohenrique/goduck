@@ -1,4 +1,4 @@
-package kafkasegmentio
+package kafkasarama
 
 type goduckMsg struct {
 	key      []byte

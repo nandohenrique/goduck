@@ -1,14 +1,18 @@
 package mockstream
 
-type mockRawMessage struct {
+type goduckMessage struct {
 	data []byte
 	idx  int
 }
 
-func (m mockRawMessage) Bytes() []byte {
+func (m goduckMessage) Key() []byte {
+	return nil
+}
+
+func (m goduckMessage) Value() []byte {
 	return m.data
 }
 
-func (m mockRawMessage) Metadata() map[string][]byte {
+func (m goduckMessage) Metadata() map[string][]byte {
 	return nil
 }

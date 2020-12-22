@@ -11,7 +11,7 @@ import (
 )
 
 type MockStream struct {
-	items         []goduck.RawMessage
+	items         []goduck.Message
 	nElems        int
 	offset        int
 	sessionOffset int
@@ -20,10 +20,10 @@ type MockStream struct {
 
 func New(items [][]byte) *MockStream {
 	nElems := len(items)
-	messages := make([]goduck.RawMessage, len(items))
+	messages := make([]goduck.Message, len(items))
 
 	for i := 0; i < len(items); i++ {
-		messages[i] = &mockRawMessage{
+		messages[i] = &goduckMessage{
 			data: items[i],
 			idx:  i,
 		}
@@ -45,7 +45,7 @@ func NewDefaultStream(partition int, nElems int) *MockStream {
 	return New(messages)
 }
 
-func (m *MockStream) Next(ctx context.Context) (goduck.RawMessage, error) {
+func (m *MockStream) Next(ctx context.Context) (goduck.Message, error) {
 	const op = errors.Op("MockStream.Pool")
 	m.mtx.Lock()
 	defer m.mtx.Unlock()

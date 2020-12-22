@@ -75,11 +75,7 @@ func (e *StreamEngine) pollMessages(ctx context.Context, stream goduck.Stream) {
 	}
 }
 
-func (e *StreamEngine) handleMessage(ctx context.Context, stream goduck.Stream, rawMessage goduck.RawMessage) {
-	msg := goduck.Message{
-		Value:    rawMessage.Bytes(),
-		Metadata: rawMessage.Metadata(),
-	}
+func (e *StreamEngine) handleMessage(ctx context.Context, stream goduck.Stream, msg goduck.Message) {
 	for {
 		err := e.processor.Process(context.Background(), msg)
 		if err == nil {

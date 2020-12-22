@@ -60,7 +60,7 @@ func (p *pubsubConsumer) start() {
 	p.Close()
 }
 
-func (p *pubsubConsumer) Next(ctx context.Context) (goduck.RawMessage, error) {
+func (p *pubsubConsumer) Next(ctx context.Context) (goduck.Message, error) {
 	const op = errors.Op("pubsubConsumer.Poll")
 	select {
 	case err, ok := <-p.errChannel:
@@ -72,7 +72,7 @@ func (p *pubsubConsumer) Next(ctx context.Context) (goduck.RawMessage, error) {
 		if !ok {
 			return nil, io.EOF
 		}
-		rawMsg := &rawMessage{
+		rawMsg := &goduckMessage{
 			msg:      msg,
 			metadata: getMetadataFromMessage(msg),
 		}
@@ -82,9 +82,9 @@ func (p *pubsubConsumer) Next(ctx context.Context) (goduck.RawMessage, error) {
 	}
 }
 
-func (p pubsubConsumer) Done(ctx context.Context, msg goduck.RawMessage) error {
+func (p pubsubConsumer) Done(ctx context.Context, msg goduck.Message) error {
 	const op = errors.Op("pubsubConsumer.Done")
-	casted, ok := msg.(*rawMessage)
+	casted, ok := msg.(*goduckMessage)
 	if !ok {
 		return errors.E(op, "invalid message type")
 	}
@@ -92,9 +92,9 @@ func (p pubsubConsumer) Done(ctx context.Context, msg goduck.RawMessage) error {
 	return nil
 }
 
-func (p pubsubConsumer) Failed(ctx context.Context, msg goduck.RawMessage) error {
+func (p pubsubConsumer) Failed(ctx context.Context, msg goduck.Message) error {
 	const op = errors.Op("pubsubConsumer.Failed")
-	casted, ok := msg.(*rawMessage)
+	casted, ok := msg.(*goduckMessage)
 	if !ok {
 		return errors.E(op, "invalid message type")
 	}

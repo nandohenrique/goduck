@@ -11,7 +11,7 @@ import (
 )
 
 type MockQueue struct {
-	items         []goduck.RawMessage
+	items         []goduck.Message
 	consumedItems []bool
 	currentIdx    int
 	mtx           *sync.Mutex
@@ -20,11 +20,11 @@ type MockQueue struct {
 // New creates a new queue mock.
 func New(items [][]byte) *MockQueue {
 	consumedItems := make([]bool, len(items))
-	messages := make([]goduck.RawMessage, len(items))
+	messages := make([]goduck.Message, len(items))
 
 	for i := 0; i < len(items); i++ {
 		consumedItems[i] = false
-		messages[i] = &mockRawMessage{
+		messages[i] = &goduckMessage{
 			data: items[i],
 			idx:  i,
 		}
@@ -47,7 +47,7 @@ func NewDefaultQueue(nElems int) *MockQueue {
 	return New(messages)
 }
 
-func (m *MockQueue) Next(ctx context.Context) (goduck.RawMessage, error) {
+func (m *MockQueue) Next(ctx context.Context) (goduck.Message, error) {
 	const op = errors.Op("MockQueue.Pool")
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
@@ -66,22 +66,22 @@ func (m *MockQueue) Next(ctx context.Context) (goduck.RawMessage, error) {
 	return nil, io.EOF
 }
 
-func (m MockQueue) Done(ctx context.Context, msg goduck.RawMessage) error {
+func (m MockQueue) Done(ctx context.Context, msg goduck.Message) error {
 	const op = errors.Op("MockQueue.Done")
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
-	rawMsg, ok := msg.(*mockRawMessage)
+	rawMsg, ok := msg.(*goduckMessage)
 	if !ok {
 		return errors.E(op, "type cast error")
 	}
 	m.consumedItems[rawMsg.idx] = true
 	return nil
 }
-func (m MockQueue) Failed(ctx context.Context, msg goduck.RawMessage) error {
+func (m MockQueue) Failed(ctx context.Context, msg goduck.Message) error {
 	const op = errors.Op("MockQueue.Failed")
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
-	rawMsg, ok := msg.(*mockRawMessage)
+	rawMsg, ok := msg.(*goduckMessage)
 	if !ok {
 		return errors.E(op, "type cast error")
 	}

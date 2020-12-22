@@ -27,17 +27,14 @@ type internalProcessor struct {
 }
 
 func (p *internalProcessor) Process(ctx context.Context, message goduck.Message) error {
+	rawKey := message.Key()
 	// messages without key should be ignored
-	if message.Metadata == nil {
-		return nil
-	}
-	rawKey := message.Metadata[goduck.KeyMetadata]
 	if rawKey == nil {
 		return nil
 	}
 
 	key := string(rawKey)
-	value := message.Value
+	value := message.Value()
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	if value == nil {

@@ -119,7 +119,7 @@ func mustCreateStream(config Config) goduck.Stream {
 	return stream
 }
 
-func (c *goduckStream) Next(ctx context.Context) (goduck.RawMessage, error) {
+func (c *goduckStream) Next(ctx context.Context) (goduck.Message, error) {
 	err := c.controller.requestJob()
 	if err != nil {
 		return nil, err
@@ -133,7 +133,8 @@ func (c *goduckStream) Next(ctx context.Context) (goduck.RawMessage, error) {
 	c.markUnackedMessage(msg)
 
 	return goduckMsg{
-		bytes:    msg.Value,
+		key:      msg.Key,
+		value:    msg.Value,
 		metadata: getMetadataFromMessage(msg),
 	}, nil
 }
@@ -240,6 +241,5 @@ func getMetadataFromMessage(msg *kafka.Message) map[string][]byte {
 	for _, header := range msg.Headers {
 		meta[string(header.Key)] = header.Value
 	}
-	meta[goduck.KeyMetadata] = msg.Key
 	return meta
 }

@@ -61,15 +61,16 @@ func NewWithCustomConfigs(config kafkaGo.ReaderConfig) goduck.Stream {
 	}
 }
 
-func (c *kafkaConsumer) Next(ctx context.Context) (goduck.RawMessage, error) {
+func (c *kafkaConsumer) Next(ctx context.Context) (goduck.Message, error) {
 	const op = errors.Op("kafkaConsumer.Poll")
 	msg, err := c.reader.FetchMessage(ctx)
 	if err != nil {
 		return nil, errors.E(op, err)
 	}
 	c.uncommitedMessages = append(c.uncommitedMessages, msg)
-	result := rawMessage{
-		bytes:    msg.Value,
+	result := goduckMsg{
+		key:      msg.Key,
+		value:    msg.Value,
 		metadata: getMetadataFromMessage(msg),
 	}
 	return result, nil
@@ -95,6 +96,5 @@ func getMetadataFromMessage(msg kafka.Message) map[string][]byte {
 	for _, header := range msg.Headers {
 		meta[header.Key] = header.Value
 	}
-	meta[goduck.KeyMetadata] = msg.Key
 	return meta
 }

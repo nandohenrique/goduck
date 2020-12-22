@@ -1,12 +1,17 @@
 package kafkaconfluent
 
 type goduckMsg struct {
-	bytes    []byte
+	key      []byte
+	value    []byte
 	metadata map[string][]byte
 }
 
-func (msg goduckMsg) Bytes() []byte {
-	return msg.bytes
+func (msg goduckMsg) Key() []byte {
+	return msg.key
+}
+
+func (msg goduckMsg) Value() []byte {
+	return msg.value
 }
 
 func (msg goduckMsg) Metadata() map[string][]byte {

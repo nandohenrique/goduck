@@ -15,7 +15,7 @@ import (
 // ordering guarantees
 type JobPoolEngine struct {
 	queue       goduck.MessagePool
-	nextMessage chan goduck.RawMessage
+	nextMessage chan goduck.Message
 	nWorkers    int
 	processor   goduck.Processor
 
@@ -41,7 +41,7 @@ func NewFromEndpoint(
 func New(queue goduck.MessagePool, processor goduck.Processor, nWorkers int) *JobPoolEngine {
 	engine := &JobPoolEngine{
 		queue:          queue,
-		nextMessage:    make(chan goduck.RawMessage),
+		nextMessage:    make(chan goduck.Message),
 		nWorkers:       nWorkers,
 		processor:      processor,
 		cancelFn:       nil,
@@ -90,16 +90,12 @@ func (e *JobPoolEngine) handleMessages(ctx context.Context) {
 	}
 }
 
-func (e *JobPoolEngine) handleMessage(ctx context.Context, rawMessage goduck.RawMessage) {
-	msg := goduck.Message{
-		Value:    rawMessage.Bytes(),
-		Metadata: rawMessage.Metadata(),
-	}
+func (e *JobPoolEngine) handleMessage(ctx context.Context, msg goduck.Message) {
 	err := e.processor.Process(ctx, msg)
 	if err == nil {
-		e.queue.Done(ctx, rawMessage)
+		e.queue.Done(ctx, msg)
 	} else {
-		e.queue.Failed(ctx, rawMessage)
+		e.queue.Failed(ctx, msg)
 		if errors.GetSeverity(err) == errors.SeverityFatal {
 			e.selfClose(err)
 		}

@@ -94,8 +94,8 @@ func (e *BatchStreamEngine) pollMessages(ctx context.Context, stream goduck.Stre
 	}
 }
 
-func (e *BatchStreamEngine) pollMessagesBatch(ctx context.Context, stream goduck.Stream) ([]goduck.RawMessage, error) {
-	msgs := make([]goduck.RawMessage, 0, e.maxBatchSize)
+func (e *BatchStreamEngine) pollMessagesBatch(ctx context.Context, stream goduck.Stream) ([]goduck.Message, error) {
+	msgs := make([]goduck.Message, 0, e.maxBatchSize)
 	var cancelFn context.CancelFunc
 	if e.maxTimeout > 0 {
 		ctx, cancelFn = context.WithTimeout(ctx, e.maxTimeout)
@@ -114,14 +114,7 @@ func (e *BatchStreamEngine) pollMessagesBatch(ctx context.Context, stream goduck
 	}
 	return msgs, nil
 }
-func (e *BatchStreamEngine) handleMessages(ctx context.Context, stream goduck.Stream, rawMessages []goduck.RawMessage) {
-	messages := make([]goduck.Message, len(rawMessages))
-	for i, msg := range rawMessages {
-		messages[i] = goduck.Message{
-			Value:    msg.Bytes(),
-			Metadata: msg.Metadata(),
-		}
-	}
+func (e *BatchStreamEngine) handleMessages(ctx context.Context, stream goduck.Stream, messages []goduck.Message) {
 	for {
 		err := e.batchProcessor.BatchProcess(context.Background(), messages)
 		if err == nil {

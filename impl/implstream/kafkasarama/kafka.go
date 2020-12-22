@@ -68,14 +68,15 @@ func (c *goduckStream) run() {
 	c.Close()
 }
 
-func (c *goduckStream) Next(ctx context.Context) (goduck.RawMessage, error) {
+func (c *goduckStream) Next(ctx context.Context) (goduck.Message, error) {
 	const op = errors.Op("kafkasarama.goduckStream.Next")
 	msg, err := c.handler.Next(ctx)
 	if err != nil {
 		return nil, errors.E(op, err)
 	}
-	return rawMessage{
-		bytes:    msg.Value,
+	return goduckMsg{
+		key:      msg.Key,
+		value:    msg.Value,
 		metadata: getMetadataFromMessage(msg),
 	}, nil
 }
@@ -98,6 +99,5 @@ func getMetadataFromMessage(msg *sarama.ConsumerMessage) map[string][]byte {
 	for _, header := range msg.Headers {
 		meta[string(header.Key)] = header.Value
 	}
-	meta[goduck.KeyMetadata] = msg.Key
 	return meta
 }

@@ -2,23 +2,13 @@ package goduck
 
 import "context"
 
-// RawMessage is the interface that Queue/Stream sources should provide.
-// It can contain some internal control variables, such as MessageID, useful
-// for marking the message as complete.
-type RawMessage interface {
-	Bytes() []byte
-	Metadata() map[string][]byte
-}
-
 // Message is the goduck abstraction of a message, from which consumers should
 // read.
-type Message struct {
-	Value    []byte
-	Metadata map[string][]byte
+type Message interface {
+	Key() []byte
+	Value() []byte
+	Metadata() map[string][]byte
 }
-
-// KeyMetadata is a special metadata containing the message's key
-var KeyMetadata = "goduck_key"
 
 // MessagePool represents a pool of unordered messages, where each one can be
 // individually marked as complete.
@@ -26,13 +16,13 @@ type MessagePool interface {
 	// Next should return the next message available in the queue. If the
 	// queue is permanently closed, it should return io.EOF error. Any
 	// other error will be retried.
-	Next(ctx context.Context) (RawMessage, error)
+	Next(ctx context.Context) (Message, error)
 	// Done marks a specific message as completed, so that it shouldn't
 	// appear on subsequent "Next" calls.
-	Done(ctx context.Context, msg RawMessage) error
+	Done(ctx context.Context, msg Message) error
 	// Failed marks a specific message as failed, so that it appears
 	// on subsequent "Next" calls.
-	Failed(ctx context.Context, msg RawMessage) error
+	Failed(ctx context.Context, msg Message) error
 	// Close closes the Queue. After calling this function, "Next" should
 	// return io.EOF
 	Close() error
@@ -44,7 +34,7 @@ type Stream interface {
 	// Next should return the next message available in the queue. If the
 	// queue is permanently closed, it should return io.EOF error. Any
 	// other error will be retried.
-	Next(ctx context.Context) (RawMessage, error)
+	Next(ctx context.Context) (Message, error)
 	// Done marks all messages polled so far as complete.
 	Done(ctx context.Context) error
 	// Close closes the Stream. After calling this function, "Next" should

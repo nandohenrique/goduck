@@ -22,7 +22,7 @@ func WrapWithLogging(next goduck.Stream) goduck.Stream {
 	}
 }
 
-func (s streamLogging) Next(ctx context.Context) (response goduck.RawMessage, err error) {
+func (s streamLogging) Next(ctx context.Context) (response goduck.Message, err error) {
 	const op = errors.Op("streammiddleware.streamLogging.Next")
 	defer func(begin time.Time) {
 		took := time.Since(begin)
@@ -38,7 +38,7 @@ func (s streamLogging) Next(ctx context.Context) (response goduck.RawMessage, er
 		} else {
 			log.Debug().
 				Dur("took", took).
-				Int("size", len(response.Bytes())).
+				Int("size", len(response.Value())).
 				Msg("Successfully fetched next message")
 		}
 
